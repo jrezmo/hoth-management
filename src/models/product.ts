@@ -15,7 +15,6 @@ export interface Product {
   wholesale_price: number;
   customer_price: number;
   quantity: number;
-  sku?: string;
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
@@ -31,8 +30,8 @@ export class ProductModel {
   static async create(product: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<Product> {
     const result = await db.query(
       `INSERT INTO products (supplier_id, category_id, size_id, name, description, 
-       wholesale_price, customer_price, quantity, sku, is_active)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       wholesale_price, customer_price, quantity, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
       [
         product.supplier_id,
@@ -43,7 +42,6 @@ export class ProductModel {
         product.wholesale_price,
         product.customer_price,
         product.quantity,
-        product.sku,
         product.is_active ?? true
       ]
     );

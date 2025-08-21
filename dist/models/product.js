@@ -9,8 +9,8 @@ const database_1 = require("./database");
 class ProductModel {
     static async create(product) {
         const result = await database_1.db.query(`INSERT INTO products (supplier_id, category_id, size_id, name, description, 
-       wholesale_price, customer_price, quantity, sku, is_active)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       wholesale_price, customer_price, quantity, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`, [
             product.supplier_id,
             product.category_id,
@@ -20,7 +20,6 @@ class ProductModel {
             product.wholesale_price,
             product.customer_price,
             product.quantity,
-            product.sku,
             product.is_active ?? true
         ]);
         return result.rows[0];

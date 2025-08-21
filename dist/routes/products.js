@@ -75,21 +75,20 @@ router.post('/', [
                 timestamp: new Date().toISOString(),
             });
         }
-        const { name, description, supplier_name, category_name, size_name, wholesale_price, customer_price, quantity, sku } = req.body;
+        const { name, description, supplier_name, category_name, size_name, wholesale_price, customer_price, quantity } = req.body;
         // Find or create supplier, category, and size
         const supplier = await supplier_1.SupplierModel.findOrCreate(supplier_name);
         const category = await category_1.CategoryModel.findOrCreate(category_name);
         const size = await size_1.SizeModel.findOrCreate(size_name);
         const product = await product_1.ProductModel.create({
             name,
-            description,
+            description: description || null,
             supplier_id: supplier.id,
             category_id: category.id,
             size_id: size.id,
             wholesale_price: parseFloat(wholesale_price),
             customer_price: parseFloat(customer_price),
-            quantity: parseInt(quantity),
-            sku,
+            quantity: parseInt(quantity) || 0,
         });
         res.status(201).json({
             data: product,

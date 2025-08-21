@@ -12,7 +12,6 @@ export interface Product {
     wholesale_price: number;
     customer_price: number;
     quantity: number;
-    sku?: string;
     is_active?: boolean;
     created_at?: string;
     updated_at?: string;

@@ -71,7 +71,6 @@ class Database {
         wholesale_price DECIMAL(10,2) NOT NULL,
         customer_price DECIMAL(10,2) NOT NULL,
         quantity INTEGER NOT NULL DEFAULT 0,
-        sku VARCHAR(100) UNIQUE,
         is_active BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
@@ -79,7 +78,6 @@ class Database {
             // Create indexes for better performance
             `CREATE INDEX IF NOT EXISTS idx_products_supplier ON products(supplier_id)`,
             `CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id)`,
-            `CREATE INDEX IF NOT EXISTS idx_products_sku ON products(sku)`,
             `CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active)`,
         ];
         for (const table of tables) {

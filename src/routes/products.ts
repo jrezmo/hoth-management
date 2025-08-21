@@ -85,8 +85,7 @@ router.post('/',
         size_name, 
         wholesale_price, 
         customer_price, 
-        quantity,
-        sku 
+        quantity
       } = req.body;
 
       // Find or create supplier, category, and size
@@ -96,14 +95,13 @@ router.post('/',
 
       const product = await ProductModel.create({
         name,
-        description,
+        description: description || null,
         supplier_id: supplier.id!,
         category_id: category.id!,
         size_id: size.id!,
         wholesale_price: parseFloat(wholesale_price),
         customer_price: parseFloat(customer_price),
-        quantity: parseInt(quantity),
-        sku,
+        quantity: parseInt(quantity) || 0,
       });
 
       res.status(201).json({
