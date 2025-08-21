@@ -19,6 +19,10 @@ const products_1 = require("./routes/products");
 const orders_1 = require("./routes/orders");
 const users_1 = require("./routes/users");
 const catalog_1 = require("./routes/catalog");
+const suppliers_1 = require("./routes/suppliers");
+const categories_1 = require("./routes/categories");
+const sizes_1 = require("./routes/sizes");
+const database_1 = require("./models/database");
 const app = (0, express_1.default)();
 const PORT = environment_1.config.port;
 // Security middleware
@@ -123,14 +127,28 @@ app.use('/api/products', products_1.productRoutes);
 app.use('/api/orders', orders_1.orderRoutes);
 app.use('/api/users', users_1.userRoutes);
 app.use('/api/catalog', catalog_1.catalogRoutes);
+app.use('/api/suppliers', suppliers_1.supplierRoutes);
+app.use('/api/categories', categories_1.categoryRoutes);
+app.use('/api/sizes', sizes_1.sizeRoutes);
 // Error handling
 app.use(error_handler_1.notFoundHandler);
 app.use(error_handler_1.errorHandler);
-// Start server
-app.listen(PORT, () => {
-    logger_1.logger.info(`🚀 Management system running on port ${PORT}`);
-    logger_1.logger.info(`📊 Environment: ${environment_1.config.nodeEnv}`);
-    logger_1.logger.info(`🔒 CORS allowed origins: ${environment_1.config.cors.allowedOrigins.join(', ')}`);
-});
+// Initialize database and start server
+async function startServer() {
+    try {
+        await database_1.db.connect();
+        app.listen(PORT, () => {
+            logger_1.logger.info(`🚀 Management system running on port ${PORT}`);
+            logger_1.logger.info(`📊 Environment: ${environment_1.config.nodeEnv}`);
+            logger_1.logger.info(`🔒 CORS allowed origins: ${environment_1.config.cors.allowedOrigins.join(', ')}`);
+            logger_1.logger.info(`🗄️  Database connected and tables initialized`);
+        });
+    }
+    catch (error) {
+        logger_1.logger.error('Failed to start server', { error });
+        process.exit(1);
+    }
+}
+startServer();
 exports.default = app;
 //# sourceMappingURL=server.js.map

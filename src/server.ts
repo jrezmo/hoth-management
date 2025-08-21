@@ -15,6 +15,10 @@ import { productRoutes } from './routes/products';
 import { orderRoutes } from './routes/orders';
 import { userRoutes } from './routes/users';
 import { catalogRoutes } from './routes/catalog';
+import { supplierRoutes } from './routes/suppliers';
+import { categoryRoutes } from './routes/categories';
+import { sizeRoutes } from './routes/sizes';
+import { db } from './models/database';
 
 const app = express();
 const PORT = config.port;
@@ -128,16 +132,30 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/catalog', catalogRoutes);
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/sizes', sizeRoutes);
 
 // Error handling
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  logger.info(`🚀 Management system running on port ${PORT}`);
-  logger.info(`📊 Environment: ${config.nodeEnv}`);
-  logger.info(`🔒 CORS allowed origins: ${config.cors.allowedOrigins.join(', ')}`);
-});
+// Initialize database and start server
+async function startServer() {
+  try {
+    await db.connect();
+    app.listen(PORT, () => {
+      logger.info(`🚀 Management system running on port ${PORT}`);
+      logger.info(`📊 Environment: ${config.nodeEnv}`);
+      logger.info(`🔒 CORS allowed origins: ${config.cors.allowedOrigins.join(', ')}`);
+      logger.info(`🗄️  Database connected and tables initialized`);
+    });
+  } catch (error) {
+    logger.error('Failed to start server', { error });
+    process.exit(1);
+  }
+}
+
+startServer();
 
 export default app;
