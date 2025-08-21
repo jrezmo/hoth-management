@@ -18,6 +18,7 @@ import { catalogRoutes } from './routes/catalog';
 import { supplierRoutes } from './routes/suppliers';
 import { categoryRoutes } from './routes/categories';
 import { sizeRoutes } from './routes/sizes';
+import { databaseRoutes } from './routes/database';
 import { db } from './models/database';
 
 const app = express();
@@ -92,6 +93,7 @@ app.use('/api/catalog', catalogRoutes);
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/sizes', sizeRoutes);
+app.use('/api/database', databaseRoutes);
 
 // Error handling
 app.use(notFoundHandler);

@@ -34,6 +34,16 @@
     .price { font-weight: 500; }
     .price.wholesale { color: #16a34a; }
     .price.customer { color: #2563eb; }
+    .clickable { cursor: pointer; color: #3b82f6; text-decoration: underline; }
+    .clickable:hover { color: #2563eb; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+    .modal-content { background-color: white; margin: 5% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 1200px; max-height: 80%; overflow-y: auto; }
+    .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+    .close:hover { color: black; }
+    .db-table { margin-bottom: 30px; }
+    .db-table-header { background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
+    .db-table-name { font-size: 1.2em; font-weight: 600; color: #1e293b; margin-bottom: 5px; }
+    .db-table-stats { color: #64748b; font-size: 0.9em; }
   </style>
 </head>
 <body>
@@ -46,6 +56,7 @@
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
       <button class="nav-tab" onclick="showTab('products')">📦 Products</button>
+      <button class="nav-tab" onclick="showTab('database')">🗄️ Database</button>
       <button class="nav-tab" onclick="showTab('api')">🚀 API</button>
     </div>
   </div>
@@ -111,6 +122,13 @@
       </div>
     </div>
 
+    <div id="database-tab" class="tab-content hidden">
+      <div class="card">
+        <h2>🗄️ Database Schema</h2>
+        <div id="database-tables"></div>
+      </div>
+    </div>
+
     <div id="api-tab" class="tab-content hidden">
       <div class="card">
         <h2>🚀 API Endpoints</h2>
@@ -129,9 +147,20 @@
             <tr><td>GET</td><td>/api/suppliers</td><td>Get all suppliers</td></tr>
             <tr><td>GET</td><td>/api/categories</td><td>Get all categories</td></tr>
             <tr><td>GET</td><td>/api/sizes</td><td>Get all sizes</td></tr>
+            <tr><td>GET</td><td>/api/database/schema</td><td>Get database schema</td></tr>
+            <tr><td>GET</td><td>/api/database/table/:name</td><td>Get table records</td></tr>
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal for viewing table records -->
+  <div id="tableModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeTableModal()">&times;</span>
+      <h2 id="modalTableName"></h2>
+      <div id="modalTableContent"></div>
     </div>
   </div>
 
@@ -152,6 +181,8 @@
       
       if (tabName === 'products') {
         loadProductData();
+      } else if (tabName === 'database') {
+        loadDatabaseSchema();
       }
     }
 
@@ -267,6 +298,115 @@
         showMessage('Failed to add product: ' + error.message, 'error');
       }
     });
+
+    // Database functionality
+    async function loadDatabaseSchema() {
+      try {
+        const response = await fetch('/api/database/schema');
+        if (response.ok) {
+          const data = await response.json();
+          renderDatabaseTables(data.data);
+        } else {
+          showMessage('Failed to load database schema', 'error');
+        }
+      } catch (error) {
+        showMessage('Failed to load database schema: ' + error.message, 'error');
+      }
+    }
+
+    function renderDatabaseTables(tables) {
+      const container = document.getElementById('database-tables');
+      
+      if (tables.length === 0) {
+        container.innerHTML = '<p style="text-align: center; padding: 40px; color: #6b7280;">No tables found in database.</p>';
+        return;
+      }
+
+      const tablesHtml = tables.map(table => {
+        const fieldsHtml = table.fields.map(field => 
+          '<tr>' +
+            '<td>' + field.name + '</td>' +
+            '<td>' + field.type + '</td>' +
+            '<td>' + (field.nullable ? 'Yes' : 'No') + '</td>' +
+            '<td>' + (field.default || '-') + '</td>' +
+          '</tr>'
+        ).join('');
+
+        return '<div class="db-table">' +
+          '<div class="db-table-header">' +
+            '<div class="db-table-name">' + table.name + '</div>' +
+            '<div class="db-table-stats">' +
+              table.fields.length + ' fields • ' +
+              '<span class="clickable" onclick="viewTableRecords(\'' + table.name + '\')">' +
+                table.record_count + ' records' +
+              '</span>' +
+            '</div>' +
+          '</div>' +
+          '<table class="table">' +
+            '<thead>' +
+              '<tr>' +
+                '<th>Field</th>' +
+                '<th>Type</th>' +
+                '<th>Nullable</th>' +
+                '<th>Default</th>' +
+              '</tr>' +
+            '</thead>' +
+            '<tbody>' + fieldsHtml + '</tbody>' +
+          '</table>' +
+        '</div>';
+      }).join('');
+
+      container.innerHTML = tablesHtml;
+    }
+
+    async function viewTableRecords(tableName) {
+      try {
+        const response = await fetch('/api/database/table/' + tableName);
+        if (response.ok) {
+          const data = await response.json();
+          showTableModal(tableName, data.data);
+        } else {
+          showMessage('Failed to load table records', 'error');
+        }
+      } catch (error) {
+        showMessage('Failed to load table records: ' + error.message, 'error');
+      }
+    }
+
+    function showTableModal(tableName, records) {
+      document.getElementById('modalTableName').textContent = tableName + ' (' + records.length + ' records)';
+      
+      if (records.length === 0) {
+        document.getElementById('modalTableContent').innerHTML = 
+          '<p style="text-align: center; padding: 40px; color: #6b7280;">No records found in this table.</p>';
+      } else {
+        const headers = Object.keys(records[0]);
+        const headerHtml = headers.map(h => '<th>' + h + '</th>').join('');
+        const rowsHtml = records.map(record => 
+          '<tr>' + headers.map(h => '<td>' + (record[h] || '-') + '</td>').join('') + '</tr>'
+        ).join('');
+
+        document.getElementById('modalTableContent').innerHTML = 
+          '<table class="table">' +
+            '<thead><tr>' + headerHtml + '</tr></thead>' +
+            '<tbody>' + rowsHtml + '</tbody>' +
+          '</table>';
+      }
+      
+      document.getElementById('tableModal').style.display = 'block';
+    }
+
+    function closeTableModal() {
+      document.getElementById('tableModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+      const modal = document.getElementById('tableModal');
+      if (event.target === modal) {
+        closeTableModal();
+      }
+    }
   </script>
 </body>
 </html>
