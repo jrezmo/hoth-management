@@ -38,38 +38,12 @@ export class Database {
 
   private async createTables(): Promise<void> {
     const tables = [
-      // Suppliers table
-      `CREATE TABLE IF NOT EXISTS suppliers (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL UNIQUE,
-        contact_email VARCHAR(255),
-        contact_phone VARCHAR(50),
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-      )`,
-
-      // Categories table
-      `CREATE TABLE IF NOT EXISTS categories (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL UNIQUE,
-        description TEXT,
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-      )`,
-
-      // Sizes table
-      `CREATE TABLE IF NOT EXISTS sizes (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL UNIQUE,
-        created_at TIMESTAMP DEFAULT NOW()
-      )`,
-
-      // Products table
+      // Products table with denormalized supplier/category/size names
       `CREATE TABLE IF NOT EXISTS products (
         id SERIAL PRIMARY KEY,
-        supplier_id INTEGER REFERENCES suppliers(id),
-        category_id INTEGER REFERENCES categories(id),
-        size_id INTEGER REFERENCES sizes(id),
+        supplier_name VARCHAR(255) NOT NULL,
+        category_name VARCHAR(255) NOT NULL,
+        size_name VARCHAR(100) NOT NULL,
         name VARCHAR(255) NOT NULL,
         description TEXT,
         wholesale_price DECIMAL(10,2) NOT NULL,
@@ -81,8 +55,9 @@ export class Database {
       )`,
 
       // Create indexes for better performance
-      `CREATE INDEX IF NOT EXISTS idx_products_supplier ON products(supplier_id)`,
-      `CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_products_supplier_name ON products(supplier_name)`,
+      `CREATE INDEX IF NOT EXISTS idx_products_category_name ON products(category_name)`,
+      `CREATE INDEX IF NOT EXISTS idx_products_size_name ON products(size_name)`,
       `CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active)`,
     ];
 

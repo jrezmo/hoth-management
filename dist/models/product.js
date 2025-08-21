@@ -8,13 +8,13 @@ exports.ProductModel = void 0;
 const database_1 = require("./database");
 class ProductModel {
     static async create(product) {
-        const result = await database_1.db.query(`INSERT INTO products (supplier_id, category_id, size_id, name, description, 
+        const result = await database_1.db.query(`INSERT INTO products (supplier_name, category_name, size_name, name, description, 
        wholesale_price, customer_price, quantity, is_active)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`, [
-            product.supplier_id,
-            product.category_id,
-            product.size_id,
+            product.supplier_name,
+            product.category_name,
+            product.size_name,
             product.name,
             product.description,
             product.wholesale_price,
@@ -26,32 +26,16 @@ class ProductModel {
     }
     static async findAll() {
         const result = await database_1.db.query(`
-      SELECT 
-        p.*,
-        s.name as supplier_name,
-        c.name as category_name,
-        sz.name as size_name
-      FROM products p
-      LEFT JOIN suppliers s ON p.supplier_id = s.id
-      LEFT JOIN categories c ON p.category_id = c.id  
-      LEFT JOIN sizes sz ON p.size_id = sz.id
-      WHERE p.is_active = true
-      ORDER BY p.created_at DESC
+      SELECT * FROM products 
+      WHERE is_active = true
+      ORDER BY created_at DESC
     `);
         return result.rows;
     }
     static async findById(id) {
         const result = await database_1.db.query(`
-      SELECT 
-        p.*,
-        s.name as supplier_name,
-        c.name as category_name,
-        sz.name as size_name
-      FROM products p
-      LEFT JOIN suppliers s ON p.supplier_id = s.id
-      LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN sizes sz ON p.size_id = sz.id  
-      WHERE p.id = $1
+      SELECT * FROM products 
+      WHERE id = $1 AND is_active = true
     `, [id]);
         return result.rows[0] || null;
     }
@@ -80,19 +64,39 @@ class ProductModel {
     }
     static async search(term) {
         const result = await database_1.db.query(`
-      SELECT 
-        p.*,
-        s.name as supplier_name,
-        c.name as category_name,
-        sz.name as size_name
-      FROM products p
-      LEFT JOIN suppliers s ON p.supplier_id = s.id
-      LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN sizes sz ON p.size_id = sz.id
-      WHERE p.is_active = true 
-        AND (p.name ILIKE $1 OR p.description ILIKE $1 OR p.sku ILIKE $1)
-      ORDER BY p.created_at DESC
+      SELECT * FROM products
+      WHERE is_active = true 
+        AND (name ILIKE $1 OR description ILIKE $1 OR supplier_name ILIKE $1 OR category_name ILIKE $1)
+      ORDER BY created_at DESC
     `, [`%${term}%`]);
+        return result.rows;
+    }
+    // Get distinct values for picklists
+    static async getDistinctSuppliers() {
+        const result = await database_1.db.query(`
+      SELECT DISTINCT supplier_name as name 
+      FROM products 
+      WHERE is_active = true AND supplier_name IS NOT NULL
+      ORDER BY supplier_name ASC
+    `);
+        return result.rows;
+    }
+    static async getDistinctCategories() {
+        const result = await database_1.db.query(`
+      SELECT DISTINCT category_name as name 
+      FROM products 
+      WHERE is_active = true AND category_name IS NOT NULL
+      ORDER BY category_name ASC
+    `);
+        return result.rows;
+    }
+    static async getDistinctSizes() {
+        const result = await database_1.db.query(`
+      SELECT DISTINCT size_name as name 
+      FROM products 
+      WHERE is_active = true AND size_name IS NOT NULL
+      ORDER BY size_name ASC
+    `);
         return result.rows;
     }
 }

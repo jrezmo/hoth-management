@@ -1,18 +1,17 @@
 /**
- * Supplier Routes
+ * Supplier Routes - Now using distinct values from products table
  */
 
 import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { SupplierModel } from '../models/supplier';
+import { ProductModel } from '../models/product';
 import { logger } from '../utils/logger';
 
 const router = Router();
 
-// Get all suppliers
+// Get all distinct suppliers from products
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const suppliers = await SupplierModel.findAll();
+    const suppliers = await ProductModel.getDistinctSuppliers();
     res.json({
       data: suppliers,
       message: 'Suppliers retrieved successfully',
@@ -26,35 +25,5 @@ router.get('/', async (req: Request, res: Response) => {
     });
   }
 });
-
-// Create new supplier
-router.post('/',
-  [body('name').notEmpty().withMessage('Supplier name is required')],
-  async (req: Request, res: Response) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-          error: 'Validation failed',
-          details: errors.array(),
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      const supplier = await SupplierModel.create(req.body);
-      res.status(201).json({
-        data: supplier,
-        message: 'Supplier created successfully',
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      logger.error('Failed to create supplier', { error, body: req.body });
-      res.status(500).json({
-        error: 'Failed to create supplier',
-        timestamp: new Date().toISOString(),
-      });
-    }
-  }
-);
 
 export { router as supplierRoutes };

@@ -7,9 +7,9 @@ import { db } from './database';
 
 export interface Product {
   id?: number;
-  supplier_id: number;
-  category_id: number;
-  size_id: number;
+  supplier_name: string;
+  category_name: string;
+  size_name: string;
   name: string;
   description?: string;
   wholesale_price: number;
@@ -20,23 +20,17 @@ export interface Product {
   updated_at?: string;
 }
 
-export interface ProductWithDetails extends Product {
-  supplier_name?: string;
-  category_name?: string;
-  size_name?: string;
-}
-
 export class ProductModel {
   static async create(product: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<Product> {
     const result = await db.query(
-      `INSERT INTO products (supplier_id, category_id, size_id, name, description, 
+      `INSERT INTO products (supplier_name, category_name, size_name, name, description, 
        wholesale_price, customer_price, quantity, is_active)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
       [
-        product.supplier_id,
-        product.category_id, 
-        product.size_id,
+        product.supplier_name,
+        product.category_name, 
+        product.size_name,
         product.name,
         product.description,
         product.wholesale_price,
@@ -48,35 +42,19 @@ export class ProductModel {
     return result.rows[0];
   }
 
-  static async findAll(): Promise<ProductWithDetails[]> {
+  static async findAll(): Promise<Product[]> {
     const result = await db.query(`
-      SELECT 
-        p.*,
-        s.name as supplier_name,
-        c.name as category_name,
-        sz.name as size_name
-      FROM products p
-      LEFT JOIN suppliers s ON p.supplier_id = s.id
-      LEFT JOIN categories c ON p.category_id = c.id  
-      LEFT JOIN sizes sz ON p.size_id = sz.id
-      WHERE p.is_active = true
-      ORDER BY p.created_at DESC
+      SELECT * FROM products 
+      WHERE is_active = true
+      ORDER BY created_at DESC
     `);
     return result.rows;
   }
 
-  static async findById(id: number): Promise<ProductWithDetails | null> {
+  static async findById(id: number): Promise<Product | null> {
     const result = await db.query(`
-      SELECT 
-        p.*,
-        s.name as supplier_name,
-        c.name as category_name,
-        sz.name as size_name
-      FROM products p
-      LEFT JOIN suppliers s ON p.supplier_id = s.id
-      LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN sizes sz ON p.size_id = sz.id  
-      WHERE p.id = $1
+      SELECT * FROM products 
+      WHERE id = $1 AND is_active = true
     `, [id]);
     return result.rows[0] || null;
   }
@@ -117,21 +95,44 @@ export class ProductModel {
     return result.rows.length > 0;
   }
 
-  static async search(term: string): Promise<ProductWithDetails[]> {
+  static async search(term: string): Promise<Product[]> {
     const result = await db.query(`
-      SELECT 
-        p.*,
-        s.name as supplier_name,
-        c.name as category_name,
-        sz.name as size_name
-      FROM products p
-      LEFT JOIN suppliers s ON p.supplier_id = s.id
-      LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN sizes sz ON p.size_id = sz.id
-      WHERE p.is_active = true 
-        AND (p.name ILIKE $1 OR p.description ILIKE $1 OR p.sku ILIKE $1)
-      ORDER BY p.created_at DESC
+      SELECT * FROM products
+      WHERE is_active = true 
+        AND (name ILIKE $1 OR description ILIKE $1 OR supplier_name ILIKE $1 OR category_name ILIKE $1)
+      ORDER BY created_at DESC
     `, [`%${term}%`]);
+    return result.rows;
+  }
+
+  // Get distinct values for picklists
+  static async getDistinctSuppliers(): Promise<{name: string}[]> {
+    const result = await db.query(`
+      SELECT DISTINCT supplier_name as name 
+      FROM products 
+      WHERE is_active = true AND supplier_name IS NOT NULL
+      ORDER BY supplier_name ASC
+    `);
+    return result.rows;
+  }
+
+  static async getDistinctCategories(): Promise<{name: string}[]> {
+    const result = await db.query(`
+      SELECT DISTINCT category_name as name 
+      FROM products 
+      WHERE is_active = true AND category_name IS NOT NULL
+      ORDER BY category_name ASC
+    `);
+    return result.rows;
+  }
+
+  static async getDistinctSizes(): Promise<{name: string}[]> {
+    const result = await db.query(`
+      SELECT DISTINCT size_name as name 
+      FROM products 
+      WHERE is_active = true AND size_name IS NOT NULL
+      ORDER BY size_name ASC
+    `);
     return result.rows;
   }
 }

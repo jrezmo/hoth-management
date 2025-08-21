@@ -1,1 +1,1 @@
-{"version":3,"file":"suppliers.d.ts","sourceRoot":"","sources":["../../src/routes/suppliers.ts"],"names":[],"mappings":"AAAA;;GAEG;AAOH,QAAA,MAAM,MAAM,4CAAW,CAAC;AAkDxB,OAAO,EAAE,MAAM,IAAI,cAAc,EAAE,CAAC"}
+{"version":3,"file":"suppliers.d.ts","sourceRoot":"","sources":["../../src/routes/suppliers.ts"],"names":[],"mappings":"AAAA;;GAEG;AAMH,QAAA,MAAM,MAAM,4CAAW,CAAC;AAoBxB,OAAO,EAAE,MAAM,IAAI,cAAc,EAAE,CAAC"}

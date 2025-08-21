@@ -6,9 +6,6 @@
 import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { ProductModel } from '../models/product';
-import { SupplierModel } from '../models/supplier';
-import { CategoryModel } from '../models/category';
-import { SizeModel } from '../models/size';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -88,17 +85,12 @@ router.post('/',
         quantity
       } = req.body;
 
-      // Find or create supplier, category, and size
-      const supplier = await SupplierModel.findOrCreate(supplier_name);
-      const category = await CategoryModel.findOrCreate(category_name);
-      const size = await SizeModel.findOrCreate(size_name);
-
       const product = await ProductModel.create({
         name,
         description: description || null,
-        supplier_id: supplier.id!,
-        category_id: category.id!,
-        size_id: size.id!,
+        supplier_name,
+        category_name,
+        size_name,
         wholesale_price: parseFloat(wholesale_price),
         customer_price: parseFloat(customer_price),
         quantity: parseInt(quantity) || 0,
@@ -140,23 +132,6 @@ router.put('/:id',
 
       const productId = parseInt(req.params.id);
       const updates: any = { ...req.body };
-
-      // Handle supplier, category, size updates
-      if (req.body.supplier_name) {
-        const supplier = await SupplierModel.findOrCreate(req.body.supplier_name);
-        updates.supplier_id = supplier.id;
-        delete updates.supplier_name;
-      }
-      if (req.body.category_name) {
-        const category = await CategoryModel.findOrCreate(req.body.category_name);
-        updates.category_id = category.id;
-        delete updates.category_name;
-      }
-      if (req.body.size_name) {
-        const size = await SizeModel.findOrCreate(req.body.size_name);
-        updates.size_id = size.id;
-        delete updates.size_name;
-      }
 
       const product = await ProductModel.update(productId, updates);
       if (!product) {

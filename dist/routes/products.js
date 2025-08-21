@@ -8,9 +8,6 @@ exports.productRoutes = void 0;
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const product_1 = require("../models/product");
-const supplier_1 = require("../models/supplier");
-const category_1 = require("../models/category");
-const size_1 = require("../models/size");
 const logger_1 = require("../utils/logger");
 const router = (0, express_1.Router)();
 exports.productRoutes = router;
@@ -76,16 +73,12 @@ router.post('/', [
             });
         }
         const { name, description, supplier_name, category_name, size_name, wholesale_price, customer_price, quantity } = req.body;
-        // Find or create supplier, category, and size
-        const supplier = await supplier_1.SupplierModel.findOrCreate(supplier_name);
-        const category = await category_1.CategoryModel.findOrCreate(category_name);
-        const size = await size_1.SizeModel.findOrCreate(size_name);
         const product = await product_1.ProductModel.create({
             name,
             description: description || null,
-            supplier_id: supplier.id,
-            category_id: category.id,
-            size_id: size.id,
+            supplier_name,
+            category_name,
+            size_name,
             wholesale_price: parseFloat(wholesale_price),
             customer_price: parseFloat(customer_price),
             quantity: parseInt(quantity) || 0,
@@ -122,22 +115,6 @@ router.put('/:id', [
         }
         const productId = parseInt(req.params.id);
         const updates = { ...req.body };
-        // Handle supplier, category, size updates
-        if (req.body.supplier_name) {
-            const supplier = await supplier_1.SupplierModel.findOrCreate(req.body.supplier_name);
-            updates.supplier_id = supplier.id;
-            delete updates.supplier_name;
-        }
-        if (req.body.category_name) {
-            const category = await category_1.CategoryModel.findOrCreate(req.body.category_name);
-            updates.category_id = category.id;
-            delete updates.category_name;
-        }
-        if (req.body.size_name) {
-            const size = await size_1.SizeModel.findOrCreate(req.body.size_name);
-            updates.size_id = size.id;
-            delete updates.size_name;
-        }
         const product = await product_1.ProductModel.update(productId, updates);
         if (!product) {
             return res.status(404).json({
