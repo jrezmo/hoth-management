@@ -53,6 +53,8 @@ app.use((0, cors_1.default)({
 // Body parsing
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
+// Static file serving
+app.use(express_1.default.static('public'));
 // Request logging
 app.use((req, res, next) => {
     logger_1.logger.info(`${req.method} ${req.path}`, {
@@ -70,56 +72,9 @@ app.get('/api/health', (req, res) => {
         version: '1.0.0',
     });
 });
-// Landing page
+// Landing page - serve static HTML file
 app.get('/', (req, res) => {
-    res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Hoth Management System</title>
-      <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; min-height: 100vh; }
-        .container { max-width: 800px; margin: 0 auto; text-align: center; }
-        h1 { font-size: 3rem; margin-bottom: 1rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-        .subtitle { font-size: 1.2rem; opacity: 0.9; margin-bottom: 2rem; }
-        .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 30px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.2); }
-        .api-list { text-align: left; max-width: 500px; margin: 0 auto; }
-        .api-endpoint { background: rgba(255,255,255,0.1); padding: 10px 15px; margin: 10px 0; border-radius: 8px; font-family: monospace; }
-        .status { display: inline-block; background: #10b981; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; margin: 10px 0; }
-        .emoji { font-size: 2rem; margin: 10px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>❄️ Hoth Management System</h1>
-        <p class="subtitle">Business operations for the galaxy's coldest e-commerce platform</p>
-        
-        <div class="card">
-          <div class="status">🟢 System Online</div>
-          <p>The rebellion's supply chain management is operational on Hoth Base.</p>
-        </div>
-
-        <div class="card">
-          <h3>🚀 Available API Endpoints</h3>
-          <div class="api-list">
-            <div class="api-endpoint">GET /api/health - System status</div>
-            <div class="api-endpoint">POST /api/auth/* - Authentication</div>
-            <div class="api-endpoint">GET /api/products/* - Product management</div>
-            <div class="api-endpoint">GET /api/orders/* - Order processing</div>
-            <div class="api-endpoint">GET /api/users/* - User management</div>
-            <div class="api-endpoint">GET /api/catalog/* - Product catalog</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="emoji">🏔️</div>
-          <p><em>"Sir, the possibility of successfully managing an e-commerce platform on an ice planet is approximately 3,720 to 1!"</em></p>
-          <p><strong>- C-3PO, probably</strong></p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `);
+    res.sendFile('index.html', { root: 'public' });
 });
 // API routes
 app.use('/api/auth', auth_1.authRoutes);

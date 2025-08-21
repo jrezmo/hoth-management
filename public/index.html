@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hoth Management System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; background: #f8fafc; color: #1e293b; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
+    .header h1 { margin: 0; font-size: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+    .nav { background: white; border-bottom: 1px solid #e2e8f0; padding: 0 20px; }
+    .nav-tabs { display: flex; gap: 0; }
+    .nav-tab { background: none; border: none; padding: 15px 20px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 500; color: #64748b; }
+    .nav-tab.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+    .content { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 20px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-weight: 500; margin-bottom: 4px; color: #374151; font-size: 14px; }
+    .form-group input, .form-group textarea { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    .btn { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+    .btn:hover { background: #2563eb; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #f3f4f6; }
+    .table th { font-weight: 600; color: #374151; background: #f9fafb; }
+    .table tr:hover { background: #f9fafb; }
+    .error { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 12px; border-radius: 6px; margin-bottom: 20px; }
+    .success { background: #d1fae5; border: 1px solid #a7f3d0; color: #059669; padding: 12px; border-radius: 6px; margin-bottom: 20px; }
+    .hidden { display: none; }
+    .status { display: inline-block; background: #10b981; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; }
+    .text-right { text-align: right; }
+    .price { font-weight: 500; }
+    .price.wholesale { color: #16a34a; }
+    .price.customer { color: #2563eb; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>❄️ Hoth Management System</h1>
+    <p>Business operations for the rebellion's e-commerce platform</p>
+  </div>
+  
+  <div class="nav">
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+      <button class="nav-tab" onclick="showTab('products')">📦 Products</button>
+      <button class="nav-tab" onclick="showTab('api')">🚀 API</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div id="dashboard-tab" class="tab-content">
+      <div class="card">
+        <div class="status">🟢 System Online</div>
+        <h2>Welcome to Hoth Management</h2>
+        <p>Manage your rebel supply chain from Echo Base. All systems operational.</p>
+      </div>
+    </div>
+
+    <div id="products-tab" class="tab-content hidden">
+      <div class="card">
+        <h2>Add New Product</h2>
+        <div id="message"></div>
+        <form id="product-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Product Name *</label>
+              <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+              <label>Supplier *</label>
+              <input type="text" name="supplier_name" list="suppliers-list" required>
+              <datalist id="suppliers-list"></datalist>
+            </div>
+            <div class="form-group">
+              <label>Category *</label>
+              <input type="text" name="category_name" list="categories-list" required>
+              <datalist id="categories-list"></datalist>
+            </div>
+            <div class="form-group">
+              <label>Size *</label>
+              <input type="text" name="size_name" list="sizes-list" required>
+              <datalist id="sizes-list"></datalist>
+            </div>
+            <div class="form-group">
+              <label>Wholesale Price *</label>
+              <input type="number" name="wholesale_price" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label>Customer Price *</label>
+              <input type="number" name="customer_price" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label>Quantity</label>
+              <input type="number" name="quantity" value="0">
+            </div>
+            <div class="form-group">
+              <label>SKU</label>
+              <input type="text" name="sku">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn">Add Product</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Products <span id="product-count"></span></h2>
+        <div id="products-table"></div>
+      </div>
+    </div>
+
+    <div id="api-tab" class="tab-content hidden">
+      <div class="card">
+        <h2>🚀 API Endpoints</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Endpoint</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>GET</td><td>/api/health</td><td>System status</td></tr>
+            <tr><td>GET</td><td>/api/products</td><td>Get all products</td></tr>
+            <tr><td>POST</td><td>/api/products</td><td>Create product</td></tr>
+            <tr><td>GET</td><td>/api/suppliers</td><td>Get all suppliers</td></tr>
+            <tr><td>GET</td><td>/api/categories</td><td>Get all categories</td></tr>
+            <tr><td>GET</td><td>/api/sizes</td><td>Get all sizes</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let products = [];
+    let suppliers = [];
+    let categories = [];
+    let sizes = [];
+
+    function showTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+      
+      // Show selected tab
+      document.getElementById(tabName + '-tab').classList.remove('hidden');
+      event.target.classList.add('active');
+      
+      if (tabName === 'products') {
+        loadProductData();
+      }
+    }
+
+    function showMessage(message, type = 'success') {
+      const messageEl = document.getElementById('message');
+      messageEl.innerHTML = '<div class="' + type + '">' + message + '</div>';
+      setTimeout(() => messageEl.innerHTML = '', 3000);
+    }
+
+    async function loadProductData() {
+      try {
+        const [productsRes, suppliersRes, categoriesRes, sizesRes] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/suppliers'),
+          fetch('/api/categories'),
+          fetch('/api/sizes')
+        ]);
+
+        if (productsRes.ok) {
+          const data = await productsRes.json();
+          products = data.data || [];
+          renderProductsTable();
+        }
+        
+        if (suppliersRes.ok) {
+          const data = await suppliersRes.json();
+          suppliers = data.data || [];
+          populateDatalist('suppliers-list', suppliers);
+        }
+        
+        if (categoriesRes.ok) {
+          const data = await categoriesRes.json();
+          categories = data.data || [];
+          populateDatalist('categories-list', categories);
+        }
+        
+        if (sizesRes.ok) {
+          const data = await sizesRes.json();
+          sizes = data.data || [];
+          populateDatalist('sizes-list', sizes);
+        }
+      } catch (error) {
+        showMessage('Failed to load data: ' + error.message, 'error');
+      }
+    }
+
+    function populateDatalist(listId, items) {
+      const datalist = document.getElementById(listId);
+      datalist.innerHTML = items.map(item => '<option value="' + item.name + '"></option>').join('');
+    }
+
+    function renderProductsTable() {
+      const container = document.getElementById('products-table');
+      document.getElementById('product-count').textContent = '(' + products.length + ')';
+      
+      if (products.length === 0) {
+        container.innerHTML = '<p style="text-align: center; padding: 40px; color: #6b7280;">No products yet. Add your first product above!</p>';
+        return;
+      }
+
+      const tableRows = products.map(product => 
+        '<tr>' +
+          '<td><strong>' + product.name + '</strong></td>' +
+          '<td>' + (product.supplier_name || '-') + '</td>' +
+          '<td>' + (product.category_name || '-') + '</td>' +
+          '<td>' + (product.size_name || '-') + '</td>' +
+          '<td class="text-right price wholesale">$' + parseFloat(product.wholesale_price).toFixed(2) + '</td>' +
+          '<td class="text-right price customer">$' + parseFloat(product.customer_price).toFixed(2) + '</td>' +
+          '<td class="text-right">' + product.quantity + '</td>' +
+          '<td style="font-family: monospace;">' + (product.sku || '-') + '</td>' +
+        '</tr>'
+      ).join('');
+
+      container.innerHTML = 
+        '<table class="table">' +
+          '<thead>' +
+            '<tr>' +
+              '<th>Name</th>' +
+              '<th>Supplier</th>' +
+              '<th>Category</th>' +
+              '<th>Size</th>' +
+              '<th class="text-right">Wholesale</th>' +
+              '<th class="text-right">Customer</th>' +
+              '<th class="text-right">Qty</th>' +
+              '<th>SKU</th>' +
+            '</tr>' +
+          '</thead>' +
+          '<tbody>' +
+            tableRows +
+          '</tbody>' +
+        '</table>';
+    }
+
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const product = Object.fromEntries(formData.entries());
+      
+      try {
+        const response = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(product)
+        });
+
+        if (response.ok) {
+          showMessage('Product added successfully!');
+          e.target.reset();
+          loadProductData();
+        } else {
+          const errorData = await response.json();
+          showMessage(errorData.error || 'Failed to add product', 'error');
+        }
+      } catch (error) {
+        showMessage('Failed to add product: ' + error.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>
