@@ -91,9 +91,25 @@ export const errorHandler = (
     error: {
       message: responseMessage,
       statusCode,
-      ...(isDevelopment && error.stack && { stack: error.stack }),
+      ...(isDevelopment && {
+        stack: error.stack,
+        details: {
+          name: error.name,
+          originalMessage: error.message,
+          isOperational: error.isOperational || false,
+        }
+      }),
     },
     timestamp: new Date().toISOString(),
     path: req.path,
+    method: req.method,
+    ...(isDevelopment && {
+      request: {
+        headers: req.headers,
+        query: req.query,
+        body: req.body,
+        params: req.params,
+      }
+    })
   });
 };
